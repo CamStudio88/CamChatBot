@@ -31,27 +31,20 @@
       padding: 10px;
       border-radius: 6px;
       min-height: 80px;
-      margin-top: 10px;
-      position: relative;
       white-space: pre-wrap;
-      padding-right: 100px; /* Make space for buttons */
+      margin-top: 10px;
     }
     #copyBtn, #speakBtn {
-      position: absolute;
-      top: 10px;
+      width: auto;
+      display: inline-block;
+      padding: 8px 14px;
+      margin-right: 10px;
       background: #444;
       color: #fff;
       border: none;
-      padding: 6px 10px;
       border-radius: 4px;
       cursor: pointer;
-      z-index: 10;
-    }
-    #copyBtn {
-      right: 10px;
-    }
-    #speakBtn {
-      right: 70px;
+      user-select: none;
     }
     #voiceBtn {
       width: auto;
@@ -98,9 +91,9 @@
   <button id="voiceBtn" onclick="startVoiceInput()">🎤 Voice Input</button>
 
   <div id="response">
-    <button id="speakBtn" onclick="speakResponse()">🔊 Speak</button>
-    <button id="copyBtn" onclick="copyToClipboard()">Copy</button>
     <p id="responseText"></p>
+    <button id="copyBtn" onclick="copyToClipboard()">Copy</button>
+    <button id="speakBtn" onclick="speakResponse()">🔊 Speak</button>
   </div>
 
   <script>
@@ -115,7 +108,6 @@
         return;
       }
 
-      // Compose the prompt including language
       const prompt = `Generate a seductive and NSFW reply from a cam model with the persona "${persona}" using a ${tone} tone, responding in ${language}. The member said: "${userInput}". Keep it brief, flirtatious, and suitable for adult cam sites. Do not mention you are AI.`;
 
       document.getElementById("responseText").textContent = "Generating...";
@@ -152,7 +144,7 @@
       if (!text) return alert("Nothing to speak!");
 
       const utterance = new SpeechSynthesisUtterance(text);
-      // You can customize voice/language here if you want
+      // Customize voice/language here if you want
       speechSynthesis.speak(utterance);
     }
 
