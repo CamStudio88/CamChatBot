@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Cam Reply Generator</title>
   <style>
     body {
@@ -58,10 +58,20 @@
 
   <button onclick="generate()">Generate Reply</button>
   <button id="speakButton">🔊 Speak</button>
+  <button id="copyButton">📋 Copy Reply</button>
 
   <div id="result"></div>
 
   <script>
+    // Check login cookie, redirect to login if not present
+    function getCookie(name) {
+      const v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
+      return v ? v[2] : null;
+    }
+    if (!getCookie('token')) {
+      window.location.href = '/login.html';
+    }
+
     async function generate() {
       const message = document.getElementById("message").value;
       const persona = document.getElementById("persona").value;
@@ -100,28 +110,43 @@
 
       switch (persona) {
         case "bratty":
-          utterance.voice = voices.find(v => v.name.includes("Samantha") || v.name.includes("Google US English"));
-          utterance.pitch = 1.4;
+          utterance.voice = voices.find(v => v.name.includes("Google US English"));
+          utterance.pitch = 1.6;
+          utterance.rate = 1.3;
           break;
         case "dominant":
-          utterance.voice = voices.find(v => v.name.includes("Karen") || v.name.includes("Google UK English Female"));
-          utterance.pitch = 0.9;
+          utterance.voice = voices.find(v => v.name.includes("Google UK English Female") || v.name.includes("Karen"));
+          utterance.pitch = 0.8;
+          utterance.rate = 0.9;
           break;
         case "sweet":
-          utterance.voice = voices.find(v => v.name.includes("Victoria") || v.name.includes("Google UK English Male"));
-          utterance.pitch = 1.3;
+          utterance.voice = voices.find(v => v.name.includes("Google UK English Male"));
+          utterance.pitch = 1.4;
+          utterance.rate = 1.1;
           break;
         case "wild":
-          utterance.voice = voices.find(v => v.name.includes("Fiona") || v.name.includes("Google US English"));
-          utterance.pitch = 1.1;
+          utterance.voice = voices.find(v => v.name.includes("Google US English"));
+          utterance.pitch = 1.2;
+          utterance.rate = 1.4;
           break;
         default:
           utterance.voice = voices[0];
           utterance.pitch = 1.0;
+          utterance.rate = 1.0;
       }
 
-      utterance.rate = 1.0;
       speechSynthesis.speak(utterance);
+    });
+
+    // Copy reply button
+    const copyButton = document.getElementById("copyButton");
+    copyButton.addEventListener("click", () => {
+      const text = document.getElementById("result").innerText;
+      if (!text) return alert("Nothing to copy!");
+
+      navigator.clipboard.writeText(text)
+        .then(() => alert("Reply copied to clipboard!"))
+        .catch(() => alert("Failed to copy. Try manually."));
     });
   </script>
 </body>
