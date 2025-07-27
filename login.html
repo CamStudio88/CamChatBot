@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Login - Cam Studio</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 2em;
+      background: #121212;
+      color: #fff;
+    }
+    form {
+      max-width: 400px;
+      margin: 3em auto;
+      padding: 2em;
+      background: #222;
+      border-radius: 10px;
+    }
+    input {
+      width: 100%;
+      padding: 1em;
+      margin: 1em 0;
+      border-radius: 8px;
+      border: none;
+      font-size: 1em;
+    }
+    button {
+      width: 100%;
+      padding: 1em;
+      background: #e91e63;
+      color: white;
+      font-size: 1.1em;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <form id="loginForm">
+    <h2>Login</h2>
+    <input type="text" id="username" placeholder="Username" required autocomplete="username" />
+    <input type="password" id="password" placeholder="Password" required autocomplete="current-password" />
+    <button type="submit">Login</button>
+  </form>
+
+  <script>
+    const form = document.getElementById("loginForm");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        // Save token cookie for 1 day
+        document.cookie = `token=${data.token}; path=/; max-age=86400`;
+        window.location.href = "/";
+      } else {
+        alert(data.error || "Login failed");
+      }
+    });
+  </script>
+</body>
+</html>
