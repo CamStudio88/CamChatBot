@@ -1,261 +1,227 @@
 <!DOCTYPE html>
-<html lang="en" >
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
   <title>Cam Model AI Assistant</title>
   <style>
-    /* Reset and base */
+    /* Reset */
     * {
       box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
     body {
-      margin: 0;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
         Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-      background: #121212;
-      color: #eee;
+      background: #f2f6fc;
       display: flex;
       justify-content: center;
-      padding: 20px;
-      min-height: 100vh;
+      align-items: center;
+      height: 100vh;
+      padding: 10px;
     }
+
+    /* Container styled like a mobile app screen */
     .app-container {
-      background: #1f1f1f;
-      border-radius: 20px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.6);
-      width: 100%;
-      max-width: 480px;
-      padding: 20px;
+      background: white;
+      width: 375px;
+      max-width: 100%;
+      height: 700px;
+      border-radius: 30px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      overflow: hidden;
     }
-    h1 {
+
+    /* Header */
+    header {
+      background: linear-gradient(90deg, #a2d9ff 0%, #ffbfd7 100%);
+      padding: 20px;
       text-align: center;
       font-weight: 700;
-      margin-bottom: 10px;
-      color: #f76c6c;
+      font-size: 1.4rem;
+      color: #333;
+      border-bottom-left-radius: 30px;
+      border-bottom-right-radius: 30px;
       user-select: none;
+      letter-spacing: 1.5px;
     }
-    label {
-      font-weight: 600;
-      margin-bottom: 6px;
-      display: block;
-      color: #ccc;
-      user-select: none;
-    }
-    select, textarea, button {
-      width: 100%;
-      border-radius: 14px;
-      border: none;
-      font-size: 1.1rem;
-      padding: 14px 18px;
-      background: #2c2c2c;
-      color: #eee;
-      outline-offset: 2px;
-      transition: background 0.3s ease;
-    }
-    select:focus, textarea:focus, button:focus {
-      background: #3a3a3a;
-      outline: none;
-      box-shadow: 0 0 0 3px #f76c6c;
-    }
-    textarea {
-      resize: vertical;
-      min-height: 120px;
-      font-family: inherit;
-      line-height: 1.4;
-    }
-    button {
-      cursor: pointer;
-      font-weight: 700;
-      background: #f76c6c;
-      color: white;
-      box-shadow: 0 4px 15px rgba(247, 108, 108, 0.6);
-      user-select: none;
-      border: none;
-      transition: background 0.25s ease;
-      margin-top: 10px;
-    }
-    button:hover:not(:disabled) {
-      background: #e04f4f;
-      box-shadow: 0 6px 20px rgba(224, 79, 79, 0.8);
-    }
-    button:disabled {
-      background: #555;
-      cursor: not-allowed;
-      box-shadow: none;
-    }
-    #response {
-      background: #2c2c2c;
-      border-radius: 16px;
-      min-height: 100px;
-      padding: 16px;
-      white-space: pre-wrap;
-      color: #ddd;
-      font-size: 1.05rem;
-      position: relative;
-      user-select: text;
-      box-shadow: inset 0 0 8px rgba(0,0,0,0.7);
-    }
-    #buttons-container {
-      display: flex;
-      gap: 12px;
-      margin-top: 8px;
-      justify-content: flex-end;
-    }
-    #copyBtn, #speakBtn {
+
+    /* Chat messages container */
+    .chat-container {
       flex: 1;
-      background: #444;
-      color: #eee;
-      border-radius: 14px;
-      padding: 12px 0;
-      font-weight: 600;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.5);
-      transition: background 0.3s ease;
+      padding: 15px 20px;
+      overflow-y: auto;
+      background: #e9f0fb;
     }
-    #copyBtn:hover, #speakBtn:hover {
-      background: #5a5a5a;
+
+    /* Each message */
+    .message {
+      max-width: 80%;
+      margin-bottom: 12px;
+      padding: 12px 16px;
+      border-radius: 20px;
+      font-size: 1rem;
+      line-height: 1.3;
+      word-wrap: break-word;
+      user-select: text;
+      white-space: pre-wrap;
     }
-    #voiceBtn {
-      background: #6bcf6b;
+
+    /* User messages are baby blue */
+    .message.user {
+      background-color: #a2d9ff;
       color: #1a1a1a;
-      border-radius: 16px;
-      padding: 14px 0;
-      font-weight: 700;
-      box-shadow: 0 4px 18px rgba(107, 207, 107, 0.7);
+      margin-left: auto;
+      border-bottom-right-radius: 4px;
+      border-bottom-left-radius: 20px;
+    }
+
+    /* AI messages are baby pink */
+    .message.ai {
+      background-color: #ffbfd7;
+      color: #2a2a2a;
+      margin-right: auto;
+      border-bottom-left-radius: 4px;
+      border-bottom-right-radius: 20px;
+    }
+
+    /* Input area container */
+    .input-area {
+      display: flex;
+      padding: 12px 16px;
+      background: white;
+      border-top: 1px solid #ccc;
+    }
+
+    /* Text input */
+    #userInput {
+      flex: 1;
+      font-size: 1.1rem;
+      padding: 10px 14px;
+      border: 2px solid #a2d9ff;
+      border-radius: 30px;
+      outline: none;
+      transition: border-color 0.3s ease;
+    }
+    #userInput:focus {
+      border-color: #ffbfd7;
+    }
+
+    /* Send button */
+    #sendBtn {
+      background: #ffbfd7;
+      border: none;
+      margin-left: 12px;
+      padding: 0 20px;
+      border-radius: 30px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 1rem;
+      color: #3a3a3a;
       transition: background 0.3s ease;
-      margin-top: 10px;
       user-select: none;
     }
-    #voiceBtn:hover {
-      background: #4ba84b;
+    #sendBtn:hover {
+      background: #ffa6b8;
+    }
+    #sendBtn:active {
+      background: #e8949f;
+    }
+
+    /* Scrollbar styling */
+    .chat-container::-webkit-scrollbar {
+      width: 8px;
+    }
+    .chat-container::-webkit-scrollbar-thumb {
+      background: #a2d9ff;
+      border-radius: 4px;
+    }
+    .chat-container::-webkit-scrollbar-track {
+      background: #e9f0fb;
     }
   </style>
 </head>
 <body>
-  <div class="app-container">
-    <h1>Cam Model AI Assistant</h1>
+  <div class="app-container" role="main" aria-label="Cam Model AI Assistant chat app">
+    <header>Cam Model AI Assistant</header>
 
-    <label for="persona">Select Persona:</label>
-    <select id="persona" aria-label="Select Persona">
-      <option value="Flirty and Naughty">Flirty and Naughty</option>
-      <option value="Submissive and Teasing">Submissive and Teasing</option>
-      <option value="Dominant and Seductive">Dominant and Seductive</option>
-      <option value="Raunchy and Wild">Raunchy and Wild</option>
-      <option value="Playful and Submissive">Playful and Submissive</option>
-      <option value="Very Sexual and Aggressive">Very Sexual and Aggressive</option>
-    </select>
+    <div id="chat" class="chat-container" aria-live="polite" aria-relevant="additions"></div>
 
-    <label for="tone">Select Tone:</label>
-    <select id="tone" aria-label="Select Tone">
-      <option value="mature">Mature</option>
-      <option value="young">Young</option>
-    </select>
-
-    <label for="language">Select Language:</label>
-    <select id="language" aria-label="Select Language">
-      <option value="english">English</option>
-      <option value="hindi">Hindi</option>
-      <option value="isizulu">IsiZulu</option>
-    </select>
-
-    <label for="userInput">Your Message:</label>
-    <textarea id="userInput" placeholder="Paste member message here..." aria-label="User message input"></textarea>
-
-    <button id="generateBtn" onclick="generate()">Generate Response</button>
-    <button id="voiceBtn" onclick="startVoiceInput()">🎤 Voice Input</button>
-
-    <div id="response" aria-live="polite" aria-label="Generated response text">
-      <p id="responseText"></p>
-    </div>
-    <div id="buttons-container">
-      <button id="copyBtn" onclick="copyToClipboard()">Copy</button>
-      <button id="speakBtn" onclick="speakResponse()">🔊 Speak</button>
-    </div>
+    <form id="inputForm" class="input-area" autocomplete="off" role="form" aria-label="Send message form">
+      <input
+        type="text"
+        id="userInput"
+        name="userInput"
+        placeholder="Type your message here..."
+        aria-label="Message input"
+        required
+        autocomplete="off"
+        spellcheck="true"
+        autocapitalize="sentences"
+      />
+      <button type="submit" id="sendBtn" aria-label="Send message">Send</button>
+    </form>
   </div>
 
   <script>
-    async function generate() {
-      const userInput = document.getElementById("userInput").value.trim();
-      const persona = document.getElementById("persona").value;
-      const tone = document.getElementById("tone").value;
-      const language = document.getElementById("language").value;
-      const generateBtn = document.getElementById("generateBtn");
+    const chatContainer = document.getElementById('chat');
+    const inputForm = document.getElementById('inputForm');
+    const userInput = document.getElementById('userInput');
 
-      if (!userInput) {
-        alert("Please enter a message.");
-        return;
-      }
+    function appendMessage(text, sender) {
+      const msg = document.createElement('div');
+      msg.classList.add('message', sender);
+      msg.textContent = text;
+      chatContainer.appendChild(msg);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
 
-      generateBtn.disabled = true;
-      generateBtn.textContent = "Generating...";
-
-      const prompt = `Generate a seductive and NSFW reply from a cam model with the persona "${persona}" using a ${tone} tone, responding in ${language}. The member said: "${userInput}". Keep it brief, flirtatious, and suitable for adult cam sites. Do not mention you are AI.`;
+    async function sendMessage(message) {
+      appendMessage(message, 'user');
+      userInput.value = '';
+      userInput.disabled = true;
+      document.getElementById('sendBtn').disabled = true;
 
       try {
-        const res = await fetch("/api/generate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userInput, persona, tone, language })
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message }),
         });
 
-        const data = await res.json();
-        if (data.result) {
-          document.getElementById("responseText").textContent = data.result;
-        } else {
-          document.getElementById("responseText").textContent = "No response.";
+        if (!response.ok) {
+          throw new Error(`Server error: ${response.statusText}`);
         }
-      } catch (e) {
-        console.error(e);
-        document.getElementById("responseText").textContent = "Failed to generate response.";
+
+        const data = await response.json();
+
+        if (data && data.reply) {
+          appendMessage(data.reply, 'ai');
+        } else {
+          appendMessage('Oops, no reply from server.', 'ai');
+        }
+      } catch (error) {
+        appendMessage(`Error: ${error.message}`, 'ai');
       } finally {
-        generateBtn.disabled = false;
-        generateBtn.textContent = "Generate Response";
+        userInput.disabled = false;
+        document.getElementById('sendBtn').disabled = false;
+        userInput.focus();
       }
     }
 
-    function copyToClipboard() {
-      const text = document.getElementById("responseText").textContent;
-      if (!text) return alert("Nothing to copy!");
-      navigator.clipboard.writeText(text).then(() => {
-        alert("Copied to clipboard!");
-      });
-    }
-
-    function speakResponse() {
-      const text = document.getElementById("responseText").textContent;
-      if (!text) return alert("Nothing to speak!");
-
-      const utterance = new SpeechSynthesisUtterance(text);
-      speechSynthesis.speak(utterance);
-    }
-
-    function startVoiceInput() {
-      if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-        alert("Sorry, your browser does not support voice input.");
-        return;
+    inputForm.addEventListener('submit', e => {
+      e.preventDefault();
+      const message = userInput.value.trim();
+      if (message) {
+        sendMessage(message);
       }
+    });
 
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      const recognition = new SpeechRecognition();
-
-      recognition.lang = 'en-US';
-      recognition.interimResults = false;
-      recognition.maxAlternatives = 1;
-
-      recognition.start();
-
-      recognition.onresult = function(event) {
-        const speechResult = event.results[0][0].transcript;
-        document.getElementById("userInput").value = speechResult;
-      };
-
-      recognition.onerror = function(event) {
-        alert('Error occurred in recognition: ' + event.error);
-      };
-    }
+    // Focus input on page load
+    userInput.focus();
   </script>
 </body>
 </html>
