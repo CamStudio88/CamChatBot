@@ -1,11 +1,3 @@
-// api/generate.js
-
-import OpenAI from "openai";
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-});
-
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
@@ -13,30 +5,36 @@ export default async function handler(req, res) {
 
   const { message, persona, language } = req.body;
 
-  let prompt = `You are a cam model chatting with a member. Respond in a short, sexy, playful, and NSFW way.`;
-
-  if (persona === "flirty") {
-    prompt += " You're teasing, seductive and a little playful.";
-  } else if (persona === "dominant") {
-    prompt += " You're dominant, confident, and in control.";
-  } else if (persona === "cute") {
-    prompt += " You're sweet, innocent-sounding but still suggestive and naughty.";
-
+  if (!message || !persona || !language) {
+    return res.status(400).json({ error: "Missing required fields" });
   }
 
-  prompt += ` Reply in ${language}. The member said: "${message}"`;
+  const prompt = `You are a seductive webcam model. Your persona is ${persona}. You reply in ${language}. 
+  Keep it short, engaging, playful, and human-like. Here is the user's message: "${message}"`;
 
   try {
-    const completion = await openai.chat.completions.create({
-      messages: [{ role: "user", content: prompt }],
-      model: "gpt-4",
-      temperature: 0.9,
-      max_tokens: 100
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: "gpt-4",
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.85
+      })
     });
 
-    const reply = completion.choices[0].message.content;
-    res.status(200).json({ reply });
-  } catch (err) {
-    res.status(500).json({ error: err.message || "Error generating reply." });
+    const data = await response.json();
+
+    if (data.choices && data.choices.length > 0) {
+      res.status(200).json({ reply: data.choices[0].message.content.trim() });
+    } else {
+      res.status(500).json({ error: "No response from OpenAI" });
+    }
+  } catch (error) {
+    console.error("OpenAI API Error:", error);
+    res.status(500).json({ error: "Failed to generate response" });
   }
 }
