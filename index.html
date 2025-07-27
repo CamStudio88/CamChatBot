@@ -80,6 +80,11 @@
       <option value="raunchy">Raunchy / Very Sexual</option>
     </select>
 
+    <select id="category">
+      <option value="mature">Mature</option>
+      <option value="young">Young / Hip</option>
+    </select>
+
     <select id="language">
       <option value="English">English</option>
       <option value="Spanish">Spanish</option>
@@ -98,11 +103,17 @@
 
   <script>
     async function generateReply() {
-      const message = document.getElementById("message").value;
+      const message = document.getElementById("message").value.trim();
       const persona = document.getElementById("persona").value;
+      const category = document.getElementById("category").value;
       const language = document.getElementById("language").value;
 
-      // Compose persona prompt additions
+      if (!message) {
+        alert("Please enter a message.");
+        return;
+      }
+
+      // Persona description
       let personaPrompt = "";
       switch(persona) {
         case "flirty":
@@ -127,9 +138,18 @@
           personaPrompt = "You are playful and engaging.";
       }
 
+      // Category style
+      let categoryPrompt = "";
+      if (category === "mature") {
+        categoryPrompt = "Your language is mature, elegant, and seductive.";
+      } else if (category === "young") {
+        categoryPrompt = "Your language is youthful, modern, slangy, and hip.";
+      }
+
       const prompt = `
         You are an adult webcam model chatting with a member.
         ${personaPrompt}
+        ${categoryPrompt}
         Reply in ${language}.
         Keep it short, natural, seductive, and human-like.
         Never say you are AI.
@@ -169,10 +189,9 @@
       const persona = document.getElementById("persona").value;
       const voices = window.speechSynthesis.getVoices();
 
-      // Match voice roughly to persona
-      if (persona === "sweet" || persona === "submissive1" || persona === "submissive2") {
+      if (["sweet", "submissive1", "submissive2"].includes(persona)) {
         utterance.voice = voices.find(v => v.name.includes("Google UK English Female")) || null;
-      } else if (persona === "dominant" || persona === "raunchy") {
+      } else if (["dominant", "raunchy"].includes(persona)) {
         utterance.voice = voices.find(v => v.name.includes("Google US English")) || null;
       } else if (persona === "flirty") {
         utterance.voice = voices.find(v => v.name.includes("Google")) || null;
