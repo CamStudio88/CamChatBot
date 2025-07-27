@@ -3,31 +3,48 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Cam Chat Reply Generator</title>
+  <title>Cam Reply Generator</title>
   <style>
-    body { font-family: sans-serif; padding: 2em; background: #121212; color: #fff; }
-    input, select, button, textarea {
-      width: 100%; margin-top: 1em; padding: 1em;
-      font-size: 1em; border-radius: 8px; border: none;
+    body {
+      font-family: Arial, sans-serif;
+      padding: 1em;
+      background: #121212;
+      color: #fff;
     }
-    button { background: #ff0077; color: white; cursor: pointer; }
-    #result { margin-top: 2em; background: #222; padding: 1em; border-radius: 8px; }
-    .mic-button { width: auto; margin-top: 0.5em; background: #444; }
+    select, textarea, button {
+      width: 100%;
+      padding: 0.75em;
+      margin: 0.5em 0;
+      border-radius: 10px;
+      border: none;
+      font-size: 1em;
+    }
+    button {
+      background-color: #e91e63;
+      color: white;
+      cursor: pointer;
+    }
+    #result {
+      white-space: pre-wrap;
+      margin-top: 1em;
+      background: #222;
+      padding: 1em;
+      border-radius: 10px;
+    }
   </style>
 </head>
 <body>
-  <h1>🎙️ Cam Reply Generator</h1>
-  
-  <label for="persona">Choose Persona:</label>
+  <h2>💋 Cam Reply Generator</h2>
+
+  <label>Choose Persona:</label>
   <select id="persona">
-    <option value="default">Seductive</option>
+    <option value="sweet">Sweet</option>
     <option value="bratty">Bratty</option>
     <option value="dominant">Dominant</option>
-    <option value="sweet">Sweet</option>
     <option value="wild">Wild</option>
   </select>
 
-  <label for="language">Choose Language:</label>
+  <label>Choose Language:</label>
   <select id="language">
     <option value="english">English</option>
     <option value="french">French</option>
@@ -36,16 +53,16 @@
     <option value="zulu">isiZulu</option>
   </select>
 
-  <label for="message">Member Message:</label>
-  <textarea id="message" rows="3" placeholder="Paste or speak the member's message..."></textarea>
-  <button class="mic-button" onclick="startVoiceInput()">🎤 Speak</button>
+  <label>Member's Message:</label>
+  <textarea id="message" rows="4" placeholder="Paste the member’s message here..."></textarea>
 
-  <button onclick="generateReply()">Generate Reply</button>
+  <button onclick="generate()">Generate Reply</button>
+  <button id="speakButton">🔊 Speak</button>
 
   <div id="result"></div>
 
   <script>
-    async function generateReply() {
+    async function generate() {
       const message = document.getElementById("message").value;
       const persona = document.getElementById("persona").value;
       const language = document.getElementById("language").value;
@@ -53,43 +70,59 @@
       const response = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message, persona, language })
+        body: JSON.stringify({ message, persona, language }),
       });
 
       const data = await response.json();
-      document.getElementById("result").innerText = data.result || "No result.";
+      document.getElementById("result").innerText = data.result || data.error;
     }
 
-    function startVoiceInput() {
-      if (!('webkitSpeechRecognition' in window)) {
-        alert("Voice input not supported in this browser.");
-        return;
+    // Voice to persona mapping
+    const speakButton = document.getElementById("speakButton");
+    let voices = [];
+
+    function loadVoices() {
+      voices = speechSynthesis.getVoices();
+    }
+
+    loadVoices();
+    if (typeof speechSynthesis !== "undefined" && speechSynthesis.onvoiceschanged !== undefined) {
+      speechSynthesis.onvoiceschanged = loadVoices;
+    }
+
+    speakButton.addEventListener("click", () => {
+      const text = document.getElementById("result").innerText;
+      const persona = document.getElementById("persona").value;
+
+      if (!text) return;
+
+      const utterance = new SpeechSynthesisUtterance(text);
+
+      switch (persona) {
+        case "bratty":
+          utterance.voice = voices.find(v => v.name.includes("Samantha") || v.name.includes("Google US English"));
+          utterance.pitch = 1.4;
+          break;
+        case "dominant":
+          utterance.voice = voices.find(v => v.name.includes("Karen") || v.name.includes("Google UK English Female"));
+          utterance.pitch = 0.9;
+          break;
+        case "sweet":
+          utterance.voice = voices.find(v => v.name.includes("Victoria") || v.name.includes("Google UK English Male"));
+          utterance.pitch = 1.3;
+          break;
+        case "wild":
+          utterance.voice = voices.find(v => v.name.includes("Fiona") || v.name.includes("Google US English"));
+          utterance.pitch = 1.1;
+          break;
+        default:
+          utterance.voice = voices[0];
+          utterance.pitch = 1.0;
       }
 
-      const recognition = new webkitSpeechRecognition();
-      recognition.lang = "en-US"; // optional: set to multilingual later
-      recognition.interimResults = false;
-      recognition.maxAlternatives = 1;
-
-      recognition.onstart = () => {
-        document.getElementById("message").placeholder = "Listening...";
-      };
-
-      recognition.onerror = (event) => {
-        console.error("Speech error:", event);
-      };
-
-      recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        document.getElementById("message").value = transcript;
-      };
-
-      recognition.onend = () => {
-        document.getElementById("message").placeholder = "Paste or speak the member's message...";
-      };
-
-      recognition.start();
-    }
+      utterance.rate = 1.0;
+      speechSynthesis.speak(utterance);
+    });
   </script>
 </body>
 </html>
