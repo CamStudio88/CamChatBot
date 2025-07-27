@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" >
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -10,6 +10,8 @@
       background: #1e1e1e;
       color: #f0f0f0;
       padding: 20px;
+      max-width: 480px;
+      margin: auto;
     }
     select, textarea, button {
       display: block;
@@ -28,20 +30,36 @@
       background: #333;
       padding: 10px;
       border-radius: 6px;
-      min-height: 60px;
+      min-height: 80px;
       margin-top: 10px;
       position: relative;
+      white-space: pre-wrap;
     }
-    #copyBtn {
+    #copyBtn, #speakBtn {
       position: absolute;
       top: 10px;
-      right: 10px;
       background: #444;
       color: #fff;
       border: none;
-      padding: 6px 12px;
+      padding: 6px 10px;
       border-radius: 4px;
       cursor: pointer;
+    }
+    #copyBtn {
+      right: 10px;
+    }
+    #speakBtn {
+      right: 70px;
+    }
+    #voiceBtn {
+      width: auto;
+      padding: 10px 14px;
+      margin-top: 10px;
+      background: #5a9;
+      color: #fff;
+      border-radius: 6px;
+      cursor: pointer;
+      border: none;
     }
   </style>
 </head>
@@ -68,34 +86,103 @@
   <textarea id="userInput" placeholder="Paste member message here..."></textarea>
 
   <button onclick="generate()">Generate Response</button>
+  <button id="voiceBtn" onclick="startVoiceInput()">🎤 Voice Input</button>
 
   <div id="response">
+    <button id="speakBtn" onclick="speakResponse()">🔊 Speak</button>
     <button id="copyBtn" onclick="copyToClipboard()">Copy</button>
     <p id="responseText"></p>
   </div>
 
   <script>
+    // Generate response from OpenAI API
     async function generate() {
-      const userInput = document.getElementById("userInput").value;
+      const userInput = document.getElementById("userInput").value.trim();
       const persona = document.getElementById("persona").value;
       const tone = document.getElementById("tone").value;
 
-      const res = await fetch("/api/generate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ userInput, persona, tone })
-      });
+      if (!userInput) {
+        alert("Please enter a message.");
+        return;
+      }
 
-      const data = await res.json();
-      document.getElementById("responseText").textContent = data.result;
+      document.getElementById("responseText").textContent = "Generating...";
+      
+      try {
+        const res = await fetch("/api/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userInput, persona, tone })
+        });
+
+        const data = await res.json();
+        if (data.result) {
+          document.getElementById("responseText").textContent = data.result;
+        } else {
+          document.getElementById("responseText").textContent = "No response.";
+        }
+      } catch (e) {
+        console.error(e);
+        document.getElementById("responseText").textContent = "Failed to generate response.";
+      }
     }
 
+    // Copy response text to clipboard
     function copyToClipboard() {
       const text = document.getElementById("responseText").textContent;
-      navigator.clipboard.writeText(text);
-      alert("Copied to clipboard!");
+      if (!text) return alert("Nothing to copy!");
+      navigator.clipboard.writeText(text).then(() => {
+        alert("Copied to clipboard!");
+      });
+    }
+
+    // Text-to-Speech for response
+    function speakResponse() {
+      const text = document.getElementById("responseText").textContent;
+      if (!text) return alert("Nothing to speak!");
+      
+      const utterance = new SpeechSynthesisUtterance(text);
+
+      // Customize voice based on persona if you want (simple example)
+      const persona = document.getElementById("persona").value;
+      if (persona.toLowerCase().includes("dominant")) {
+        utterance.pitch = 0.7;
+        utterance.rate = 0.9;
+      } else if (persona.toLowerCase().includes("submissive")) {
+        utterance.pitch = 1.4;
+        utterance.rate = 1.2;
+      } else {
+        utterance.pitch = 1.0;
+        utterance.rate = 1.0;
+      }
+
+      speechSynthesis.speak(utterance);
+    }
+
+    // Voice input using Web Speech API
+    function startVoiceInput() {
+      if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        alert("Sorry, your browser does not support voice input.");
+        return;
+      }
+
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const recognition = new SpeechRecognition();
+
+      recognition.lang = 'en-US';
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      recognition.start();
+
+      recognition.onresult = function(event) {
+        const speechResult = event.results[0][0].transcript;
+        document.getElementById("userInput").value = speechResult;
+      };
+
+      recognition.onerror = function(event) {
+        alert('Error occurred in recognition: ' + event.error);
+      };
     }
   </script>
 </body>
