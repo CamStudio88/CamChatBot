@@ -43,6 +43,10 @@
       border-radius: 4px;
       cursor: pointer;
     }
+    .btn-row {
+      display: flex;
+      gap: 1rem;
+    }
   </style>
 </head>
 <body>
@@ -65,9 +69,12 @@
   </select>
 
   <label for="message">Enter Member Message:</label>
-  <textarea id="message" rows="4" placeholder="Paste the message here..."></textarea>
+  <textarea id="message" rows="4" placeholder="Paste or speak the message here..."></textarea>
 
-  <button onclick="generateReply()">Generate NSFW Reply</button>
+  <div class="btn-row">
+    <button onclick="generateReply()">Generate NSFW Reply</button>
+    <button onclick="startVoiceInput()">🎤 Speak</button>
+  </div>
 
   <div class="response-box" id="response" style="display:none;">
     <button class="copy-btn" onclick="copyText()">Copy</button>
@@ -104,9 +111,8 @@
       const persona = document.getElementById('persona').value;
       const reply = document.getElementById('replyText').innerText;
       const utterance = new SpeechSynthesisUtterance(reply);
-
-      // Customize voice if available
       const voices = speechSynthesis.getVoices();
+
       if (persona === 'flirty') {
         utterance.voice = voices.find(v => v.name.includes('Female') || v.name.includes('Samantha'));
       } else if (persona === 'dominant') {
@@ -117,6 +123,24 @@
       }
 
       speechSynthesis.speak(utterance);
+    }
+
+    function startVoiceInput() {
+      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      recognition.lang = 'en-US';
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        document.getElementById('message').value = transcript;
+      };
+
+      recognition.onerror = (event) => {
+        alert("Voice input error: " + event.error);
+      };
+
+      recognition.start();
     }
   </script>
 </body>
