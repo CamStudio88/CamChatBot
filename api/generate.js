@@ -22,8 +22,7 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: "OpenAI API key is missing" });
     }
 
-    // Persona-based system prompts with length instructions
-    let systemPrompt = "You are a seductive AI who replies in a flirty and erotic tone. Keep replies short and sweet—no more than 2-3 sentences, perfect for quick cam chat.";
+    let systemPrompt = "You are a seductive woman who replies in a flirty and erotic tone. Keep replies short and sweet—no more than 2-3 sentences, perfect for quick cam chat.";
 
     switch (persona) {
       case "bratty":
