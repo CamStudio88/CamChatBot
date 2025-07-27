@@ -17,6 +17,84 @@
       -moz-osx-font-smoothing: grayscale;
     }
 
+    .controls {
+      background: #fff;
+      border-radius: 30px;
+      padding: 15px 20px;
+      margin: 10px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      grid-gap: 15px;
+      align-items: center;
+      justify-items: center;
+      text-align: center;
+    }
+
+    .controls label {
+      color: #555;
+      font-weight: 600;
+      font-size: 15px;
+      margin-bottom: 6px;
+      display: block;
+      user-select: none;
+    }
+
+    .controls > * {
+      width: 100%;
+      max-width: 200px;
+    }
+
+    select, button#voiceBtn {
+      padding: 12px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 30px;
+      background-color: #7abaff; /* baby blue */
+      color: white;
+      cursor: pointer;
+      user-select: none;
+      transition: background-color 0.3s ease;
+      box-shadow: 0 3px 10px rgba(122, 186, 255, 0.4);
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    select:hover, button#voiceBtn:hover {
+      background-color: #5a94dd;
+      box-shadow: 0 5px 15px rgba(90, 148, 221, 0.6);
+    }
+
+    select:disabled, button#voiceBtn:disabled {
+      background-color: #b0cfff;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    /* Voice button overrides to pastel pink */
+    #voiceBtn {
+      background-color: #ff85a2; /* soft pastel pink */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    #voiceBtn:hover {
+      background-color: #d64d6a;
+      box-shadow: 0 5px 15px rgba(214, 77, 106, 0.8);
+    }
+    #voiceBtn:disabled {
+      background-color: #f1b9c5;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    #voiceBtn svg {
+      fill: white;
+      width: 20px;
+      height: 20px;
+    }
+
     #chat {
       flex-grow: 1;
       overflow-y: auto;
@@ -82,7 +160,7 @@
       box-shadow: 0 0 8px rgba(122, 186, 255, 0.5);
     }
 
-    button, select {
+    form button[type="submit"] {
       padding: 12px 20px;
       font-size: 16px;
       border: none;
@@ -93,74 +171,18 @@
       user-select: none;
       transition: background-color 0.3s ease;
       box-shadow: 0 3px 10px rgba(122, 186, 255, 0.4);
+      flex-shrink: 0;
     }
 
-    button:hover, select:hover {
+    form button[type="submit"]:hover {
       background-color: #5a94dd;
       box-shadow: 0 5px 15px rgba(90, 148, 221, 0.6);
     }
 
-    button:disabled, select:disabled {
+    form button[type="submit"]:disabled {
       background-color: #b0cfff;
       cursor: not-allowed;
       box-shadow: none;
-    }
-
-    label {
-      color: #555;
-      font-weight: 600;
-      margin-right: 6px;
-      user-select: none;
-      font-size: 15px;
-    }
-
-    .controls {
-      display: flex;
-      gap: 12px;
-      flex-wrap: nowrap;
-      margin: 10px;
-      align-items: center;
-      justify-content: center;
-      background: #fff;
-      border-radius: 30px;
-      padding: 10px 15px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-    }
-
-    /* New voice button style - pill-shaped and consistent */
-    #voiceBtn {
-      background-color: #ff85a2; /* soft pastel pink */
-      border: none;
-      border-radius: 30px;
-      padding: 12px 20px;
-      font-size: 16px;
-      color: white;
-      cursor: pointer;
-      user-select: none;
-      transition: background-color 0.3s ease;
-      box-shadow: 0 3px 12px rgba(255, 133, 162, 0.5);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-    }
-
-    #voiceBtn:hover {
-      background-color: #d64d6a;
-      box-shadow: 0 5px 15px rgba(214, 77, 106, 0.8);
-    }
-
-    #voiceBtn:disabled {
-      background-color: #f1b9c5;
-      cursor: not-allowed;
-      box-shadow: none;
-    }
-
-    /* Mic icon inside button */
-    #voiceBtn svg {
-      fill: white;
-      width: 20px;
-      height: 20px;
     }
 
     /* Scrollbar for chat container */
@@ -177,44 +199,52 @@
   </style>
 </head>
 <body>
-  <div id="chat" aria-live="polite" aria-relevant="additions"></div>
-
   <div class="controls" role="region" aria-label="Settings controls">
-    <label for="languageSelect">Language:</label>
-    <select id="languageSelect" aria-label="Select language">
-      <option value="en" selected>English</option>
-      <option value="es">Spanish</option>
-      <option value="hi">Hindi</option>
-      <option value="zu">IsiZulu</option>
-      <option value="de">German</option>
-      <option value="fr">French</option>
-    </select>
+    <div>
+      <label for="languageSelect">Language:</label>
+      <select id="languageSelect" aria-label="Select language">
+        <option value="en" selected>English</option>
+        <option value="es">Spanish</option>
+        <option value="hi">Hindi</option>
+        <option value="zu">IsiZulu</option>
+        <option value="de">German</option>
+        <option value="fr">French</option>
+      </select>
+    </div>
 
-    <label for="toneSelect">Tone:</label>
-    <select id="toneSelect" aria-label="Select tone">
-      <option value="young" selected>Young</option>
-      <option value="mature">Mature</option>
-    </select>
+    <div>
+      <label for="toneSelect">Tone:</label>
+      <select id="toneSelect" aria-label="Select tone">
+        <option value="young" selected>Young</option>
+        <option value="mature">Mature</option>
+      </select>
+    </div>
 
-    <label for="personaSelect">Persona:</label>
-    <select id="personaSelect" aria-label="Select persona">
-      <option value="submissive">Submissive</option>
-      <option value="dominant">Dominant</option>
-      <option value="playful">Playful</option>
-      <option value="verysexual">Very Sexual</option>
-      <option value="kinky">Kinky</option>
-    </select>
+    <div>
+      <label for="personaSelect">Persona:</label>
+      <select id="personaSelect" aria-label="Select persona">
+        <option value="submissive">Submissive</option>
+        <option value="dominant">Dominant</option>
+        <option value="playful">Playful</option>
+        <option value="verysexual">Very Sexual</option>
+        <option value="kinky">Kinky</option>
+      </select>
+    </div>
 
-    <button id="voiceBtn" aria-label="Start voice input" title="Start voice input">
-      <svg viewBox="0 0 24 24">
-        <path d="M12 14a3 3 0 003-3V5a3 3 0 10-6 0v6a3 3 0 003 3z"/>
-        <path d="M19 11v1a7 7 0 01-14 0v-1"/>
-        <line x1="12" y1="19" x2="12" y2="23"/>
-        <line x1="8" y1="23" x2="16" y2="23"/>
-      </svg>
-      Voice
-    </button>
+    <div>
+      <button id="voiceBtn" aria-label="Start voice input" title="Start voice input">
+        <svg viewBox="0 0 24 24">
+          <path d="M12 14a3 3 0 003-3V5a3 3 0 10-6 0v6a3 3 0 003 3z"/>
+          <path d="M19 11v1a7 7 0 01-14 0v-1"/>
+          <line x1="12" y1="19" x2="12" y2="23"/>
+          <line x1="8" y1="23" x2="16" y2="23"/>
+        </svg>
+        Voice
+      </button>
+    </div>
   </div>
+
+  <div id="chat" aria-live="polite" aria-relevant="additions"></div>
 
   <form id="inputForm" autocomplete="off" aria-label="Send message form">
     <input
