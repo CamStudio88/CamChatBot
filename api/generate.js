@@ -9,15 +9,9 @@ export default async function handler(req, res) {
     return res.status(405).end();
   }
 
-  const { userInput, persona, tone, conversationType } = req.body;
+  const { userInput, persona, tone } = req.body;
 
-  let prompt = "";
-
-  if (conversationType === "starter") {
-    prompt = `Create a seductive, suggestive, and flirty conversation starter for a cam model. The model's persona is "${persona}" and the tone should be ${tone}. Keep it playful, short, and perfect for starting a chat on an adult cam site.`;
-  } else {
-    prompt = `Generate a seductive and NSFW reply from a cam model with the persona of "${persona}" using a ${tone} tone. The member's message is: "${userInput}". Keep it brief, flirtatious, and suitable for platforms like Chaturbate or Stripchat. Avoid mentioning that you're an AI.`;
-  }
+  const prompt = `Generate a seductive and NSFW reply from a cam model with the persona "${persona}" using a ${tone} tone. The member said: "${userInput}". Keep it brief, flirtatious, and suitable for adult cam sites. Do not mention you are AI.`;
 
   try {
     const chatCompletion = await openai.chat.completions.create({
