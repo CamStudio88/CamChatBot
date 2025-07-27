@@ -205,11 +205,14 @@
       inputForm.querySelector('button[type="submit"]').disabled = true;
       voiceBtn.disabled = true;
 
+      const persona = document.getElementById('personaSelect').value;
+      const tone = document.getElementById('toneSelect').value;
+
       try {
         const response = await fetch('/api/generate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: `message=${encodeURIComponent(message)}`
+          body: `userInput=${encodeURIComponent(message)}&persona=${encodeURIComponent(persona)}&tone=${encodeURIComponent(tone)}`
         });
 
         if (!response.ok) {
