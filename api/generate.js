@@ -1,13 +1,30 @@
+import { parse } from 'querystring';
+
+export const config = {
+  api: {
+    bodyParser: false, // disable default Next.js JSON parser
+  },
+};
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     res.status(405).end();
     return;
   }
 
-  const { userInput, persona, tone } = req.body;
+  // Manually read raw request body (URL encoded)
+  let body = '';
+  for await (const chunk of req) {
+    body += chunk;
+  }
+  const parsedBody = parse(body);
+
+  const userInput = parsedBody.userInput || '';
+  const persona = parsedBody.persona || 'submissive';
+  const tone = parsedBody.tone || 'young';
 
   if (!userInput) {
-    res.status(400).json({ error: "Missing userInput" });
+    res.status(400).send('Missing userInput');
     return;
   }
 
@@ -36,9 +53,10 @@ export default async function handler(req, res) {
 
     const data = await response.json();
 
-    res.status(200).json({ result: data.choices[0].message.content.trim() });
+    // Send plain text response (not JSON)
+    res.status(200).send(data.choices[0].message.content.trim());
   } catch (error) {
     console.error("OpenAI API error:", error);
-    res.status(500).json({ error: "Failed to generate response" });
+    res.status(500).send('Failed to generate response');
   }
 }
