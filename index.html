@@ -206,7 +206,7 @@
       voiceBtn.disabled = true;
 
       try {
-        const response = await fetch('/api/chat', {
+        const response = await fetch('/api/generate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
           body: `message=${encodeURIComponent(message)}`
@@ -216,10 +216,10 @@
           throw new Error(`Server error: ${response.statusText}`);
         }
 
-        const data = await response.json();
+        const replyText = await response.text();
 
-        if (data && data.reply) {
-          appendMessage(data.reply, 'ai');
+        if (replyText) {
+          appendMessage(replyText, 'ai');
         } else {
           appendMessage('Oops, no reply from server.', 'ai');
         }
