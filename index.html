@@ -189,9 +189,6 @@
     const inputForm = document.getElementById('inputForm');
     const userInput = document.getElementById('userInput');
     const voiceBtn = document.getElementById('voiceBtn');
-    const languageSelect = document.getElementById('languageSelect');
-    const toneSelect = document.getElementById('toneSelect');
-    const personaSelect = document.getElementById('personaSelect');
 
     function appendMessage(text, sender) {
       const msg = document.createElement('div');
@@ -207,22 +204,12 @@
       userInput.disabled = true;
       inputForm.querySelector('button[type="submit"]').disabled = true;
       voiceBtn.disabled = true;
-      languageSelect.disabled = true;
-      toneSelect.disabled = true;
-      personaSelect.disabled = true;
 
       try {
-        const payload = {
-          message,
-          language: languageSelect.value,
-          tone: toneSelect.value,
-          persona: personaSelect.value
-        };
-
         const response = await fetch('/api/chat', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: `message=${encodeURIComponent(message)}`
         });
 
         if (!response.ok) {
@@ -242,9 +229,6 @@
         userInput.disabled = false;
         inputForm.querySelector('button[type="submit"]').disabled = false;
         voiceBtn.disabled = false;
-        languageSelect.disabled = false;
-        toneSelect.disabled = false;
-        personaSelect.disabled = false;
         userInput.focus();
       }
     }
@@ -257,18 +241,18 @@
       }
     });
 
+    // Voice recognition setup
     let recognition;
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       recognition = new SpeechRecognition();
-      recognition.lang = languageSelect.value;
+      recognition.lang = 'en-US';
       recognition.interimResults = false;
       recognition.maxAlternatives = 1;
 
       voiceBtn.addEventListener('click', () => {
         if (voiceBtn.disabled) return;
 
-        recognition.lang = languageSelect.value;
         recognition.start();
         voiceBtn.disabled = true;
       });
