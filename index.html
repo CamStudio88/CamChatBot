@@ -1,179 +1,160 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Cam Model Reply Generator</title>
+  <title>Cam Chat Bot</title>
   <style>
     body {
-      background-color: #121212;
-      color: #fff;
       font-family: Arial, sans-serif;
+      background-color: #111;
+      color: #eee;
       padding: 20px;
     }
 
-    select, textarea, button {
+    h1 {
+      color: #ff66cc;
+    }
+
+    textarea, select, button, input {
       width: 100%;
-      margin-bottom: 15px;
       padding: 12px;
-      border: none;
+      margin: 10px 0;
       border-radius: 8px;
+      border: none;
       font-size: 16px;
     }
 
-    button {
-      background-color: #ff007a;
-      color: white;
-      cursor: pointer;
+    textarea {
+      resize: vertical;
+      height: 80px;
     }
 
-    .btn-row {
+    #output {
+      background: #222;
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 10px;
+      min-height: 100px;
+      white-space: pre-wrap;
+    }
+
+    .row {
       display: flex;
       gap: 10px;
     }
 
-    .response-box {
-      background: #222;
-      padding: 20px;
-      border-radius: 10px;
-      margin-top: 20px;
-      position: relative;
-      display: none;
+    .row > * {
+      flex: 1;
     }
 
-    .copy-btn {
-      position: absolute;
-      top: 15px;
-      right: 15px;
-      background: #444;
-      border: none;
-      color: white;
-      padding: 5px 10px;
-      border-radius: 5px;
+    #copyBtn, #speakBtn {
+      background-color: #ff66cc;
+      color: #fff;
       cursor: pointer;
     }
 
-    .response-text {
-      white-space: pre-wrap;
+    #voiceInputBtn {
+      margin-top: -5px;
+      background: #444;
+      color: #fff;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
+  <h1>Cam Response Generator 💋</h1>
 
-  <h1>NSFW Reply Generator</h1>
+  <label for="message">Enter User Message:</label>
+  <textarea id="message" placeholder="Type or speak a message..."></textarea>
+  <button id="voiceInputBtn">🎤 Speak</button>
 
-  <label for="persona">Choose Persona:</label>
-  <select id="persona">
-    <option value="flirty">Flirty</option>
-    <option value="dominant">Dominant</option>
-    <option value="cute">Cute</option>
-  </select>
+  <div class="row">
+    <select id="persona">
+      <option value="flirty">Flirty</option>
+      <option value="dominant">Dominant</option>
+      <option value="sweet">Sweet</option>
+    </select>
 
-  <label for="language">Choose Language:</label>
-  <select id="language">
-    <option value="English">English</option>
-    <option value="Spanish">Spanish</option>
-    <option value="French">French</option>
-    <option value="Hindi">Hindi</option>
-    <option value="IsiZulu">IsiZulu</option>
-  </select>
-
-  <label for="message">Paste Member Message:</label>
-  <textarea id="message" rows="4" placeholder="Enter or speak the member's message..."></textarea>
-
-  <div class="btn-row">
-    <button onclick="generateReply()">Generate Reply</button>
-    <button onclick="startVoiceInput()">🎤 Speak</button>
+    <select id="language">
+      <option value="English">English</option>
+      <option value="Spanish">Spanish</option>
+      <option value="French">French</option>
+      <option value="Hindi">Hindi</option>
+      <option value="IsiZulu">IsiZulu</option>
+    </select>
   </div>
 
-  <div class="response-box" id="responseBox">
-    <button class="copy-btn" onclick="copyText()">Copy</button>
-    <p class="response-text" id="replyText"></p>
-    <button onclick="speakText()">🔊 Speak</button>
-  </div>
+  <button onclick="generateReply()">Generate Response</button>
+
+  <div id="output"></div>
+  
+  <button id="copyBtn" onclick="copyResponse()">📋 Copy to Clipboard</button>
+  <button id="speakBtn" onclick="speakResponse()">🔊 Speak Response</button>
 
   <script>
     async function generateReply() {
-      const message = document.getElementById("message").value.trim();
+      const message = document.getElementById("message").value;
       const persona = document.getElementById("persona").value;
       const language = document.getElementById("language").value;
 
-      if (!message) {
-        alert("Please enter a message first.");
-        return;
-      }
+      const res = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message, persona, language }),
+      });
 
-      try {
-        const response = await fetch("/api/generate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message, persona, language })
-        });
+      const data = await res.json();
 
-        const data = await response.json();
-
-        if (data.reply) {
-          document.getElementById("replyText").textContent = data.reply;
-          document.getElementById("responseBox").style.display = "block";
-        } else {
-          throw new Error("No reply received.");
-        }
-
-      } catch (err) {
-        console.error("Error:", err);
-        alert("Failed to generate response. Please try again.");
+      if (data.reply) {
+        document.getElementById("output").textContent = data.reply;
+      } else {
+        document.getElementById("output").textContent = "❌ Failed to generate response";
       }
     }
 
-    function copyText() {
-      const text = document.getElementById("replyText").innerText;
-      navigator.clipboard.writeText(text)
-        .then(() => alert("Copied!"))
-        .catch(() => alert("Copy failed"));
+    function copyResponse() {
+      const text = document.getElementById("output").textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        alert("✅ Copied to clipboard!");
+      });
     }
 
-    function speakText() {
-      const persona = document.getElementById("persona").value;
-      const text = document.getElementById("replyText").innerText;
-
+    function speakResponse() {
+      const text = document.getElementById("output").textContent;
       const utterance = new SpeechSynthesisUtterance(text);
-      const voices = speechSynthesis.getVoices();
 
-      if (persona === "flirty") {
-        utterance.voice = voices.find(v => v.name.includes("Samantha") || v.name.includes("Female"));
+      // Optional: voice matching by persona
+      const persona = document.getElementById("persona").value;
+      const voices = window.speechSynthesis.getVoices();
+
+      if (persona === "sweet") {
+        utterance.voice = voices.find(v => v.name.includes("Google UK English Female")) || null;
       } else if (persona === "dominant") {
-        utterance.voice = voices.find(v => v.name.includes("Karen") || v.name.includes("Victoria"));
-      } else if (persona === "cute") {
-        utterance.pitch = 2;
-        utterance.rate = 1.3;
+        utterance.voice = voices.find(v => v.name.includes("Google US English")) || null;
+      } else if (persona === "flirty") {
+        utterance.voice = voices.find(v => v.name.includes("Google")) || null;
       }
 
       speechSynthesis.speak(utterance);
     }
 
-    function startVoiceInput() {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SpeechRecognition) {
-        alert("Voice input not supported on this device/browser.");
-        return;
-      }
-
-      const recognition = new SpeechRecognition();
+    document.getElementById("voiceInputBtn").addEventListener("click", () => {
+      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
       recognition.lang = "en-US";
-      recognition.interimResults = false;
+      recognition.start();
 
       recognition.onresult = function (event) {
-        const transcript = event.results[0][0].transcript;
-        document.getElementById("message").value = transcript;
+        document.getElementById("message").value = event.results[0][0].transcript;
       };
 
-      recognition.onerror = function (event) {
-        alert("Voice input error: " + event.error);
+      recognition.onerror = function () {
+        alert("❌ Voice recognition failed. Try again.");
       };
+    });
 
-      recognition.start();
-    }
+    // Ensure voices load properly
+    window.speechSynthesis.onvoiceschanged = () => {};
   </script>
-
 </body>
 </html>
