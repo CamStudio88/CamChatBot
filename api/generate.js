@@ -1,74 +1,83 @@
-export const config = {
-  api: {
-    bodyParser: true,
-  },
-};
-
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
+  const { message, persona, language } = req.body;
+
+  if (!message || !persona || !language) {
+    return res.status(400).json({ error: "Missing fields" });
+  }
+
+  let systemPrompt = "";
+
+  // Persona setup
+  switch (persona) {
+    case "bratty":
+      systemPrompt += "You are a playful and bratty cam model. Tease the member, be flirty, confident, and slightly challenging, but always seductive.";
+      break;
+    case "dominant":
+      systemPrompt += "You are a dominant cam model. You speak with control, confidence, and sensual authority.";
+      break;
+    case "sweet":
+      systemPrompt += "You are a sweet and romantic cam model. You’re gentle, affectionate, and flirty.";
+      break;
+    case "wild":
+      systemPrompt += "You are a wild and naughty cam model. Be bold, edgy, and extremely seductive.";
+      break;
+    default:
+      systemPrompt += "You are a seductive cam model. Your job is to turn messages into irresistible, sexy replies that feel natural and real.";
+  }
+
+  // Language setup
+  let languagePrompt = "";
+  switch (language) {
+    case "french":
+      languagePrompt = " Respond in French. Use a flirty and seductive tone.";
+      break;
+    case "spanish":
+      languagePrompt = " Respond in Spanish. Use a flirty and seductive tone.";
+      break;
+    case "hindi":
+      languagePrompt = " Respond in Hindi. Use a flirty and seductive tone that fits casual cam chat.";
+      break;
+    case "zulu":
+      languagePrompt = " Respond in isiZulu. Use a flirty and seductive tone that sounds natural and fun.";
+      break;
+    default:
+      languagePrompt = " Respond in English. Use a flirty and seductive tone.";
+  }
+
+  systemPrompt += languagePrompt;
+
   try {
-    const { message, persona } = req.body;
-
-    if (!message) {
-      return res.status(400).json({ error: "No message provided" });
-    }
-
-    const apiKey = process.env.OPENAI_API_KEY;
-
-    if (!apiKey) {
-      return res.status(500).json({ error: "OpenAI API key is missing" });
-    }
-
-    let systemPrompt = "You are a seductive woman who replies in a flirty and erotic tone. Keep replies short and sweet—no more than 2-3 sentences, perfect for quick cam chat.";
-
-    switch (persona) {
-      case "bratty":
-        systemPrompt = "You are a bratty, playful tease who loves to mock and provoke men in a sexy, dismissive way. Keep it short and spicy—2-3 sentences max.";
-        break;
-      case "dominant":
-        systemPrompt = "You are a dominant, confident, and commanding woman who controls every interaction with power and sex appeal. Keep replies brief and impactful—2-3 sentences.";
-        break;
-      case "sweet":
-        systemPrompt = "You are a sweet, innocent flirt with a naughty side, acting shy but secretly wanting attention. Keep it short, cute, and flirty—2-3 sentences max.";
-        break;
-      case "wild":
-        systemPrompt = "You are a wild, uninhibited nympho who loves to say dirty things and escalate quickly, no filter. Keep replies short, intense, and playful—2-3 sentences.";
-        break;
-    }
-
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    const openaiRes = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "gpt-4o",
+        model: "gpt-4",
         messages: [
           { role: "system", content: systemPrompt },
-          { role: "user", content: message },
+          { role: "user", content: message }
         ],
-        temperature: 0.7,
-        max_tokens: 75,
+        temperature: 0.8,
+        max_tokens: 100,
       }),
     });
 
-    const data = await response.json();
+    const data = await openaiRes.json();
 
-    console.log("OpenAI raw response:", JSON.stringify(data, null, 2));
-
-    const result = data?.choices?.[0]?.message?.content;
-
-    if (!result) {
-      return res.status(200).json({ result: "⚠️ AI returned no result. Try again." });
+    if (data.error) {
+      return res.status(500).json({ error: data.error.message });
     }
 
-    res.status(200).json({ result });
-  } catch (error) {
-    console.error("OpenAI API Error:", error);
-    res.status(500).json({ error: error.message || "Something went wrong" });
+    const result = data.choices?.[0]?.message?.content?.trim();
+    return res.status(200).json({ result });
+  } catch (err) {
+    console.error("API Error:", err);
+    return res.status(500).json({ error: "Internal server error" });
   }
 }
