@@ -6,104 +6,129 @@
   <title>Cam Model AI Assistant</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-      background-color: #f5f5f5;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f9f9fb;
       display: flex;
       flex-direction: column;
       height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
 
     #chat {
       flex-grow: 1;
       overflow-y: auto;
       background-color: #ffffff;
-      border: 1px solid #ddd;
-      padding: 15px;
-      border-radius: 8px;
-      margin-bottom: 15px;
+      border-radius: 30px 30px 0 0;
+      padding: 20px 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+      margin: 0 10px 10px 10px;
+      font-size: 16px;
     }
 
     .message {
-      max-width: 75%;
-      padding: 10px 15px;
-      margin-bottom: 10px;
-      border-radius: 15px;
+      max-width: 80%;
+      padding: 14px 18px;
+      margin-bottom: 12px;
+      border-radius: 24px;
       word-wrap: break-word;
-      font-size: 1rem;
+      line-height: 1.4;
+      font-size: 16px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
     }
 
     .message.user {
-      background-color: #d0e6ff;
+      background-color: #cce4ff; /* soft baby blue */
+      color: #003366;
       margin-left: auto;
-      border-bottom-right-radius: 0;
+      border-bottom-right-radius: 6px;
+      box-shadow: 2px 2px 8px rgba(0, 80, 180, 0.2);
     }
 
     .message.ai {
-      background-color: #e0e0e0;
+      background-color: #ffe6f0; /* soft pastel pink */
+      color: #660033;
       margin-right: auto;
-      border-bottom-left-radius: 0;
+      border-bottom-left-radius: 6px;
+      box-shadow: 2px 2px 8px rgba(180, 20, 80, 0.15);
     }
 
     form {
       display: flex;
-      flex-wrap: wrap;
       gap: 10px;
+      padding: 10px 15px;
+      margin: 0 10px 20px 10px;
+      background: #fff;
+      border-radius: 30px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
       align-items: center;
     }
 
     input[type="text"] {
       flex-grow: 1;
-      padding: 12px 16px;
-      font-size: 1rem;
-      border: 1px solid #ccc;
-      border-radius: 20px;
+      padding: 14px 18px;
+      font-size: 16px;
+      border: 1px solid #ddd;
+      border-radius: 30px;
       outline: none;
-      min-width: 200px;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+      transition: border-color 0.2s ease;
+    }
+
+    input[type="text"]:focus {
+      border-color: #7abaff;
+      box-shadow: 0 0 8px rgba(122, 186, 255, 0.5);
     }
 
     button, select {
-      padding: 10px 14px;
-      font-size: 1rem;
-      border: 1px solid #ccc;
-      border-radius: 20px;
-      background-color: #007bff;
+      padding: 12px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 30px;
+      background-color: #7abaff; /* baby blue */
       color: white;
       cursor: pointer;
-      transition: background-color 0.2s ease;
       user-select: none;
+      transition: background-color 0.3s ease;
+      box-shadow: 0 3px 10px rgba(122, 186, 255, 0.4);
     }
 
     button:hover, select:hover {
-      background-color: #0056b3;
+      background-color: #5a94dd;
+      box-shadow: 0 5px 15px rgba(90, 148, 221, 0.6);
     }
 
     button:disabled, select:disabled {
-      background-color: #999;
+      background-color: #b0cfff;
       cursor: not-allowed;
+      box-shadow: none;
     }
 
     label {
-      color: #333;
+      color: #555;
       font-weight: 600;
       margin-right: 6px;
       user-select: none;
+      font-size: 15px;
     }
 
     .controls {
       display: flex;
-      gap: 10px;
+      gap: 12px;
       flex-wrap: wrap;
-      margin-bottom: 10px;
+      margin: 10px;
       align-items: center;
+      justify-content: center;
     }
 
     #voiceBtn {
-      background-color: #28a745;
+      background-color: #ff85a2; /* soft pastel pink */
       border: none;
       border-radius: 50%;
-      width: 44px;
-      height: 44px;
+      width: 48px;
+      height: 48px;
       padding: 0;
       display: flex;
       justify-content: center;
@@ -111,22 +136,36 @@
       cursor: pointer;
       user-select: none;
       transition: background-color 0.3s ease;
+      box-shadow: 0 3px 12px rgba(255, 133, 162, 0.5);
     }
 
     #voiceBtn:hover {
-      background-color: #1e7e34;
+      background-color: #d64d6a;
+      box-shadow: 0 5px 15px rgba(214, 77, 106, 0.8);
     }
 
     #voiceBtn:disabled {
-      background-color: #999;
+      background-color: #f1b9c5;
       cursor: not-allowed;
+      box-shadow: none;
     }
 
-    /* Mic icon */
     #voiceBtn svg {
       fill: white;
-      width: 20px;
-      height: 20px;
+      width: 22px;
+      height: 22px;
+    }
+
+    /* Scrollbar for chat container (nice and subtle) */
+    #chat::-webkit-scrollbar {
+      width: 6px;
+    }
+    #chat::-webkit-scrollbar-thumb {
+      background-color: rgba(122, 186, 255, 0.5);
+      border-radius: 3px;
+    }
+    #chat::-webkit-scrollbar-track {
+      background-color: #f9f9fb;
     }
   </style>
 </head>
