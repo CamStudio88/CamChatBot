@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Cam Model AI Assistant</title>
   <style>
     body {
@@ -48,12 +48,6 @@
 <body>
   <h1>Cam Model AI Assistant</h1>
 
-  <label for="conversation-type">Select Purpose:</label>
-  <select id="conversation-type">
-    <option value="reply">Generate Reply</option>
-    <option value="starter">Conversation Starter</option>
-  </select>
-
   <label for="persona">Select Persona:</label>
   <select id="persona">
     <option value="Flirty and Naughty">Flirty and Naughty</option>
@@ -70,8 +64,8 @@
     <option value="young">Young</option>
   </select>
 
-  <label for="userInput">Your Message (leave blank for starter):</label>
-  <textarea id="userInput" placeholder="Paste a message here to generate a reply..."></textarea>
+  <label for="userInput">Your Message:</label>
+  <textarea id="userInput" placeholder="Paste member message here..."></textarea>
 
   <button onclick="generate()">Generate Response</button>
 
@@ -85,14 +79,13 @@
       const userInput = document.getElementById("userInput").value;
       const persona = document.getElementById("persona").value;
       const tone = document.getElementById("tone").value;
-      const conversationType = document.getElementById("conversation-type").value;
 
       const res = await fetch("/api/generate", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ userInput, persona, tone, conversationType })
+        body: JSON.stringify({ userInput, persona, tone })
       });
 
       const data = await res.json();
