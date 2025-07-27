@@ -27,6 +27,15 @@
     <option value="wild">Wild</option>
   </select>
 
+  <label for="language">Choose Language:</label>
+  <select id="language">
+    <option value="english">English</option>
+    <option value="french">French</option>
+    <option value="spanish">Spanish</option>
+    <option value="hindi">Hindi</option>
+    <option value="zulu">isiZulu</option>
+  </select>
+
   <label for="message">Member Message:</label>
   <textarea id="message" rows="3" placeholder="Paste or speak the member's message..."></textarea>
   <button class="mic-button" onclick="startVoiceInput()">🎤 Speak</button>
@@ -39,11 +48,12 @@
     async function generateReply() {
       const message = document.getElementById("message").value;
       const persona = document.getElementById("persona").value;
+      const language = document.getElementById("language").value;
 
       const response = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message, persona })
+        body: JSON.stringify({ message, persona, language })
       });
 
       const data = await response.json();
@@ -57,7 +67,7 @@
       }
 
       const recognition = new webkitSpeechRecognition();
-      recognition.lang = "en-US";
+      recognition.lang = "en-US"; // optional: set to multilingual later
       recognition.interimResults = false;
       recognition.maxAlternatives = 1;
 
