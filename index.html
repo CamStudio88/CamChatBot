@@ -2,152 +2,122 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Cam Reply Generator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cam ChatBot</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      padding: 1em;
-      background: #121212;
+      background: #111;
       color: #fff;
+      padding: 2rem;
     }
-    select, textarea, button {
+    select, input, textarea, button {
+      display: block;
       width: 100%;
-      padding: 0.75em;
-      margin: 0.5em 0;
-      border-radius: 10px;
+      margin-bottom: 1rem;
+      padding: 0.75rem;
+      font-size: 1rem;
+      border-radius: 8px;
       border: none;
-      font-size: 1em;
     }
     button {
-      background-color: #e91e63;
+      background-color: #ff007a;
       color: white;
       cursor: pointer;
     }
-    #result {
-      white-space: pre-wrap;
-      margin-top: 1em;
+    .response-box {
       background: #222;
-      padding: 1em;
-      border-radius: 10px;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-top: 1rem;
+      position: relative;
+    }
+    .copy-btn {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: #444;
+      color: #fff;
+      border: none;
+      padding: 0.3rem 0.6rem;
+      border-radius: 4px;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <h2>💋 Cam Reply Generator</h2>
+  <h1>Cam Model Reply Generator</h1>
 
-  <label>Choose Persona:</label>
+  <label for="persona">Choose Persona:</label>
   <select id="persona">
-    <option value="sweet">Sweet</option>
-    <option value="bratty">Bratty</option>
+    <option value="flirty">Flirty</option>
     <option value="dominant">Dominant</option>
-    <option value="wild">Wild</option>
+    <option value="cute">Cute</option>
   </select>
 
-  <label>Choose Language:</label>
+  <label for="language">Select Language:</label>
   <select id="language">
-    <option value="english">English</option>
-    <option value="french">French</option>
-    <option value="spanish">Spanish</option>
-    <option value="hindi">Hindi</option>
-    <option value="zulu">isiZulu</option>
+    <option value="English">English</option>
+    <option value="Spanish">Spanish</option>
+    <option value="French">French</option>
+    <option value="Hindi">Hindi</option>
+    <option value="IsiZulu">IsiZulu</option>
   </select>
 
-  <label>Member's Message:</label>
-  <textarea id="message" rows="4" placeholder="Paste the member’s message here..."></textarea>
+  <label for="message">Enter Member Message:</label>
+  <textarea id="message" rows="4" placeholder="Paste the message here..."></textarea>
 
-  <button onclick="generate()">Generate Reply</button>
-  <button id="speakButton">🔊 Speak</button>
-  <button id="copyButton">📋 Copy Reply</button>
+  <button onclick="generateReply()">Generate NSFW Reply</button>
 
-  <div id="result"></div>
+  <div class="response-box" id="response" style="display:none;">
+    <button class="copy-btn" onclick="copyText()">Copy</button>
+    <p id="replyText"></p>
+    <button onclick="speakText()">🔊 Speak</button>
+  </div>
 
   <script>
-    // Check login cookie, redirect to login if not present
-    function getCookie(name) {
-      const v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
-      return v ? v[2] : null;
-    }
-    if (!getCookie('token')) {
-      window.location.href = '/login.html';
-    }
+    async function generateReply() {
+      const persona = document.getElementById('persona').value;
+      const language = document.getElementById('language').value;
+      const message = document.getElementById('message').value;
 
-    async function generate() {
-      const message = document.getElementById("message").value;
-      const persona = document.getElementById("persona").value;
-      const language = document.getElementById("language").value;
-
-      const response = await fetch("/api/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message, persona, language }),
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message, persona, language })
       });
 
-      const data = await response.json();
-      document.getElementById("result").innerText = data.result || data.error;
+      const data = await res.json();
+      const reply = data.reply;
+
+      document.getElementById('replyText').innerText = reply;
+      document.getElementById('response').style.display = 'block';
     }
 
-    // Voice to persona mapping
-    const speakButton = document.getElementById("speakButton");
-    let voices = [];
-
-    function loadVoices() {
-      voices = speechSynthesis.getVoices();
+    function copyText() {
+      const text = document.getElementById('replyText').innerText;
+      navigator.clipboard.writeText(text);
+      alert('Copied to clipboard!');
     }
 
-    loadVoices();
-    if (typeof speechSynthesis !== "undefined" && speechSynthesis.onvoiceschanged !== undefined) {
-      speechSynthesis.onvoiceschanged = loadVoices;
-    }
+    function speakText() {
+      const persona = document.getElementById('persona').value;
+      const reply = document.getElementById('replyText').innerText;
+      const utterance = new SpeechSynthesisUtterance(reply);
 
-    speakButton.addEventListener("click", () => {
-      const text = document.getElementById("result").innerText;
-      const persona = document.getElementById("persona").value;
-
-      if (!text) return;
-
-      const utterance = new SpeechSynthesisUtterance(text);
-
-      switch (persona) {
-        case "bratty":
-          utterance.voice = voices.find(v => v.name.includes("Google US English"));
-          utterance.pitch = 1.6;
-          utterance.rate = 1.3;
-          break;
-        case "dominant":
-          utterance.voice = voices.find(v => v.name.includes("Google UK English Female") || v.name.includes("Karen"));
-          utterance.pitch = 0.8;
-          utterance.rate = 0.9;
-          break;
-        case "sweet":
-          utterance.voice = voices.find(v => v.name.includes("Google UK English Male"));
-          utterance.pitch = 1.4;
-          utterance.rate = 1.1;
-          break;
-        case "wild":
-          utterance.voice = voices.find(v => v.name.includes("Google US English"));
-          utterance.pitch = 1.2;
-          utterance.rate = 1.4;
-          break;
-        default:
-          utterance.voice = voices[0];
-          utterance.pitch = 1.0;
-          utterance.rate = 1.0;
+      // Customize voice if available
+      const voices = speechSynthesis.getVoices();
+      if (persona === 'flirty') {
+        utterance.voice = voices.find(v => v.name.includes('Female') || v.name.includes('Samantha'));
+      } else if (persona === 'dominant') {
+        utterance.voice = voices.find(v => v.name.includes('Victoria') || v.name.includes('Karen'));
+      } else if (persona === 'cute') {
+        utterance.pitch = 2;
+        utterance.rate = 1.4;
       }
 
       speechSynthesis.speak(utterance);
-    });
-
-    // Copy reply button
-    const copyButton = document.getElementById("copyButton");
-    copyButton.addEventListener("click", () => {
-      const text = document.getElementById("result").innerText;
-      if (!text) return alert("Nothing to copy!");
-
-      navigator.clipboard.writeText(text)
-        .then(() => alert("Reply copied to clipboard!"))
-        .catch(() => alert("Failed to copy. Try manually."));
-    });
+    }
   </script>
 </body>
 </html>
