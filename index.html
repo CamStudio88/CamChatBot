@@ -3,218 +3,107 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Cam Chat Bot</title>
+  <title>Cam Model AI Assistant</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: #111;
-      color: #eee;
+      background: #1e1e1e;
+      color: #f0f0f0;
       padding: 20px;
     }
-
-    h1 {
-      color: #ff66cc;
-    }
-
-    textarea, select, button, input {
+    select, textarea, button {
+      display: block;
       width: 100%;
-      padding: 12px;
       margin: 10px 0;
-      border-radius: 8px;
+      padding: 12px;
+      font-size: 1rem;
+      border-radius: 6px;
       border: none;
-      font-size: 16px;
     }
-
     textarea {
       resize: vertical;
-      height: 80px;
+      height: 100px;
     }
-
-    #output {
-      background: #222;
-      padding: 15px;
-      border-radius: 10px;
+    #response {
+      background: #333;
+      padding: 10px;
+      border-radius: 6px;
+      min-height: 60px;
       margin-top: 10px;
-      min-height: 100px;
-      white-space: pre-wrap;
+      position: relative;
     }
-
-    .row {
-      display: flex;
-      gap: 10px;
-    }
-
-    .row > * {
-      flex: 1;
-    }
-
-    #copyBtn, #speakBtn {
-      background-color: #ff66cc;
-      color: #fff;
-      cursor: pointer;
-      margin-top: 10px;
-    }
-
-    #voiceInputBtn {
-      margin-top: -5px;
+    #copyBtn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
       background: #444;
       color: #fff;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
       cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <h1>Cam Response Generator 💋</h1>
+  <h1>Cam Model AI Assistant</h1>
 
-  <label for="message">Enter User Message:</label>
-  <textarea id="message" placeholder="Type or speak a message..."></textarea>
-  <button id="voiceInputBtn">🎤 Speak</button>
+  <label for="conversation-type">Select Purpose:</label>
+  <select id="conversation-type">
+    <option value="reply">Generate Reply</option>
+    <option value="starter">Conversation Starter</option>
+  </select>
 
-  <div class="row">
-    <select id="persona">
-      <option value="flirty">Flirty</option>
-      <option value="dominant">Dominant</option>
-      <option value="sweet">Sweet</option>
-      <option value="submissive1">Submissive - Gentle</option>
-      <option value="submissive2">Submissive - Eager</option>
-      <option value="raunchy">Raunchy / Very Sexual</option>
-    </select>
+  <label for="persona">Select Persona:</label>
+  <select id="persona">
+    <option value="Flirty and Naughty">Flirty and Naughty</option>
+    <option value="Submissive and Teasing">Submissive and Teasing</option>
+    <option value="Dominant and Seductive">Dominant and Seductive</option>
+    <option value="Raunchy and Wild">Raunchy and Wild</option>
+    <option value="Playful and Submissive">Playful and Submissive</option>
+    <option value="Very Sexual and Aggressive">Very Sexual and Aggressive</option>
+  </select>
 
-    <select id="category">
-      <option value="mature">Mature</option>
-      <option value="young">Young / Hip</option>
-    </select>
+  <label for="tone">Select Tone:</label>
+  <select id="tone">
+    <option value="mature">Mature</option>
+    <option value="young">Young</option>
+  </select>
 
-    <select id="language">
-      <option value="English">English</option>
-      <option value="Spanish">Spanish</option>
-      <option value="French">French</option>
-      <option value="Hindi">Hindi</option>
-      <option value="IsiZulu">IsiZulu</option>
-    </select>
+  <label for="userInput">Your Message (leave blank for starter):</label>
+  <textarea id="userInput" placeholder="Paste a message here to generate a reply..."></textarea>
+
+  <button onclick="generate()">Generate Response</button>
+
+  <div id="response">
+    <button id="copyBtn" onclick="copyToClipboard()">Copy</button>
+    <p id="responseText"></p>
   </div>
 
-  <button onclick="generateReply()">Generate Response</button>
-
-  <div id="output"></div>
-  
-  <button id="copyBtn" onclick="copyResponse()">📋 Copy to Clipboard</button>
-  <button id="speakBtn" onclick="speakResponse()">🔊 Speak Response</button>
-
   <script>
-    async function generateReply() {
-      const message = document.getElementById("message").value.trim();
+    async function generate() {
+      const userInput = document.getElementById("userInput").value;
       const persona = document.getElementById("persona").value;
-      const category = document.getElementById("category").value;
-      const language = document.getElementById("language").value;
+      const tone = document.getElementById("tone").value;
+      const conversationType = document.getElementById("conversation-type").value;
 
-      if (!message) {
-        alert("Please enter a message.");
-        return;
-      }
-
-      // Persona description
-      let personaPrompt = "";
-      switch(persona) {
-        case "flirty":
-          personaPrompt = "You are flirty, teasing, and playful.";
-          break;
-        case "dominant":
-          personaPrompt = "You are dominant, confident, and in control.";
-          break;
-        case "sweet":
-          personaPrompt = "You are sweet, innocent-sounding but suggestive and naughty.";
-          break;
-        case "submissive1":
-          personaPrompt = "You are submissive, gentle, eager to please, and shy.";
-          break;
-        case "submissive2":
-          personaPrompt = "You are submissive, eager, a bit desperate to obey and please.";
-          break;
-        case "raunchy":
-          personaPrompt = "You are extremely raunchy, very sexual, explicit but playful.";
-          break;
-        default:
-          personaPrompt = "You are playful and engaging.";
-      }
-
-      // Category style
-      let categoryPrompt = "";
-      if (category === "mature") {
-        categoryPrompt = "Your language is mature, elegant, and seductive.";
-      } else if (category === "young") {
-        categoryPrompt = "Your language is youthful, modern, slangy, and hip.";
-      }
-
-      const prompt = `
-        You are an adult webcam model chatting with a member.
-        ${personaPrompt}
-        ${categoryPrompt}
-        Reply in ${language}.
-        Keep it short, natural, seductive, and human-like.
-        Never say you are AI.
-        The member said: "${message}"
-      `;
-
-      try {
-        const response = await fetch("/api/generate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: prompt, persona, language }),
-        });
-
-        const data = await response.json();
-
-        if (data.reply) {
-          document.getElementById("output").textContent = data.reply;
-        } else {
-          document.getElementById("output").textContent = "❌ Failed to generate response";
-        }
-      } catch (e) {
-        document.getElementById("output").textContent = "❌ Error: " + e.message;
-      }
-    }
-
-    function copyResponse() {
-      const text = document.getElementById("output").textContent;
-      navigator.clipboard.writeText(text).then(() => {
-        alert("✅ Copied to clipboard!");
+      const res = await fetch("/api/generate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ userInput, persona, tone, conversationType })
       });
+
+      const data = await res.json();
+      document.getElementById("responseText").textContent = data.result;
     }
 
-    function speakResponse() {
-      const text = document.getElementById("output").textContent;
-      const utterance = new SpeechSynthesisUtterance(text);
-
-      const persona = document.getElementById("persona").value;
-      const voices = window.speechSynthesis.getVoices();
-
-      if (["sweet", "submissive1", "submissive2"].includes(persona)) {
-        utterance.voice = voices.find(v => v.name.includes("Google UK English Female")) || null;
-      } else if (["dominant", "raunchy"].includes(persona)) {
-        utterance.voice = voices.find(v => v.name.includes("Google US English")) || null;
-      } else if (persona === "flirty") {
-        utterance.voice = voices.find(v => v.name.includes("Google")) || null;
-      }
-
-      speechSynthesis.speak(utterance);
+    function copyToClipboard() {
+      const text = document.getElementById("responseText").textContent;
+      navigator.clipboard.writeText(text);
+      alert("Copied to clipboard!");
     }
-
-    document.getElementById("voiceInputBtn").addEventListener("click", () => {
-      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-      recognition.lang = "en-US";
-      recognition.start();
-
-      recognition.onresult = function (event) {
-        document.getElementById("message").value = event.results[0][0].transcript;
-      };
-
-      recognition.onerror = function () {
-        alert("❌ Voice recognition failed. Try again.");
-      };
-    });
-
-    window.speechSynthesis.onvoiceschanged = () => {};
   </script>
 </body>
 </html>
