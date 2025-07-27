@@ -52,6 +52,7 @@
       background-color: #ff66cc;
       color: #fff;
       cursor: pointer;
+      margin-top: 10px;
     }
 
     #voiceInputBtn {
@@ -74,6 +75,9 @@
       <option value="flirty">Flirty</option>
       <option value="dominant">Dominant</option>
       <option value="sweet">Sweet</option>
+      <option value="submissive1">Submissive - Gentle</option>
+      <option value="submissive2">Submissive - Eager</option>
+      <option value="raunchy">Raunchy / Very Sexual</option>
     </select>
 
     <select id="language">
@@ -98,18 +102,56 @@
       const persona = document.getElementById("persona").value;
       const language = document.getElementById("language").value;
 
-      const res = await fetch("/api/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message, persona, language }),
-      });
+      // Compose persona prompt additions
+      let personaPrompt = "";
+      switch(persona) {
+        case "flirty":
+          personaPrompt = "You are flirty, teasing, and playful.";
+          break;
+        case "dominant":
+          personaPrompt = "You are dominant, confident, and in control.";
+          break;
+        case "sweet":
+          personaPrompt = "You are sweet, innocent-sounding but suggestive and naughty.";
+          break;
+        case "submissive1":
+          personaPrompt = "You are submissive, gentle, eager to please, and shy.";
+          break;
+        case "submissive2":
+          personaPrompt = "You are submissive, eager, a bit desperate to obey and please.";
+          break;
+        case "raunchy":
+          personaPrompt = "You are extremely raunchy, very sexual, explicit but playful.";
+          break;
+        default:
+          personaPrompt = "You are playful and engaging.";
+      }
 
-      const data = await res.json();
+      const prompt = `
+        You are an adult webcam model chatting with a member.
+        ${personaPrompt}
+        Reply in ${language}.
+        Keep it short, natural, seductive, and human-like.
+        Never say you are AI.
+        The member said: "${message}"
+      `;
 
-      if (data.reply) {
-        document.getElementById("output").textContent = data.reply;
-      } else {
-        document.getElementById("output").textContent = "❌ Failed to generate response";
+      try {
+        const response = await fetch("/api/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: prompt, persona, language }),
+        });
+
+        const data = await response.json();
+
+        if (data.reply) {
+          document.getElementById("output").textContent = data.reply;
+        } else {
+          document.getElementById("output").textContent = "❌ Failed to generate response";
+        }
+      } catch (e) {
+        document.getElementById("output").textContent = "❌ Error: " + e.message;
       }
     }
 
@@ -124,13 +166,13 @@
       const text = document.getElementById("output").textContent;
       const utterance = new SpeechSynthesisUtterance(text);
 
-      // Optional: voice matching by persona
       const persona = document.getElementById("persona").value;
       const voices = window.speechSynthesis.getVoices();
 
-      if (persona === "sweet") {
+      // Match voice roughly to persona
+      if (persona === "sweet" || persona === "submissive1" || persona === "submissive2") {
         utterance.voice = voices.find(v => v.name.includes("Google UK English Female")) || null;
-      } else if (persona === "dominant") {
+      } else if (persona === "dominant" || persona === "raunchy") {
         utterance.voice = voices.find(v => v.name.includes("Google US English")) || null;
       } else if (persona === "flirty") {
         utterance.voice = voices.find(v => v.name.includes("Google")) || null;
@@ -153,7 +195,6 @@
       };
     });
 
-    // Ensure voices load properly
     window.speechSynthesis.onvoiceschanged = () => {};
   </script>
 </body>
