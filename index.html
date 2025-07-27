@@ -133,6 +133,59 @@
       box-shadow: 2px 2px 8px rgba(180, 20, 80, 0.15);
     }
 
+    /* New response box for last AI response */
+    #responseBox {
+      background-color: #fff0f5;
+      border: 2px solid #ff85a2;
+      border-radius: 20px;
+      margin: 0 10px 15px 10px;
+      padding: 15px 20px;
+      font-size: 16px;
+      color: #660033;
+      min-height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 14px rgba(255, 133, 162, 0.25);
+      user-select: text;
+    }
+
+    #responseText {
+      flex-grow: 1;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      margin-right: 15px;
+    }
+
+    #copyBtn {
+      background-color: #ff85a2;
+      border: none;
+      border-radius: 20px;
+      padding: 10px 18px;
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 3px 10px rgba(255, 133, 162, 0.5);
+      transition: background-color 0.3s ease;
+      flex-shrink: 0;
+      user-select: none;
+    }
+
+    #copyBtn:hover {
+      background-color: #d64d6a;
+      box-shadow: 0 5px 15px rgba(214, 77, 106, 0.8);
+    }
+
+    #copyBtn:active {
+      background-color: #b33a4d;
+    }
+
+    #copyBtn:disabled {
+      background-color: #f1b9c5;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
     form {
       display: flex;
       gap: 10px;
@@ -246,6 +299,11 @@
 
   <div id="chat" aria-live="polite" aria-relevant="additions"></div>
 
+  <div id="responseBox" aria-live="polite" aria-label="Latest AI response" role="region">
+    <div id="responseText">Your AI response will appear here...</div>
+    <button id="copyBtn" aria-label="Copy AI response">Copy</button>
+  </div>
+
   <form id="inputForm" autocomplete="off" aria-label="Send message form">
     <input
       type="text"
@@ -266,6 +324,9 @@
     const inputForm = document.getElementById('inputForm');
     const userInput = document.getElementById('userInput');
     const voiceBtn = document.getElementById('voiceBtn');
+    const responseBox = document.getElementById('responseBox');
+    const responseText = document.getElementById('responseText');
+    const copyBtn = document.getElementById('copyBtn');
 
     function appendMessage(text, sender) {
       const msg = document.createElement('div');
@@ -300,11 +361,17 @@
 
         if (replyText) {
           appendMessage(replyText, 'ai');
+          responseText.textContent = replyText;
+          copyBtn.disabled = false;
         } else {
           appendMessage('Oops, no reply from server.', 'ai');
+          responseText.textContent = 'Oops, no reply from server.';
+          copyBtn.disabled = true;
         }
       } catch (error) {
         appendMessage(`Error: ${error.message}`, 'ai');
+        responseText.textContent = `Error: ${error.message}`;
+        copyBtn.disabled = true;
       } finally {
         userInput.disabled = false;
         inputForm.querySelector('button[type="submit"]').disabled = false;
@@ -319,6 +386,18 @@
       if (message) {
         sendMessage(message);
       }
+    });
+
+    copyBtn.addEventListener('click', () => {
+      if (!responseText.textContent || responseText.textContent === 'Your AI response will appear here...') {
+        return;
+      }
+      navigator.clipboard.writeText(responseText.textContent).then(() => {
+        copyBtn.textContent = 'Copied!';
+        setTimeout(() => (copyBtn.textContent = 'Copy'), 1500);
+      }).catch(() => {
+        alert('Failed to copy. Please try manually.');
+      });
     });
 
     // Voice recognition setup
@@ -357,6 +436,9 @@
     } else {
       voiceBtn.style.display = 'none';
     }
+
+    // Initially disable copy button
+    copyBtn.disabled = true;
 
     userInput.focus();
   </script>
