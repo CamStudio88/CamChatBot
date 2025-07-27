@@ -10,7 +10,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { message } = req.body;
+    const { message, persona } = req.body;
 
     if (!message) {
       return res.status(400).json({ error: "No message provided" });
@@ -20,6 +20,24 @@ export default async function handler(req, res) {
 
     if (!apiKey) {
       return res.status(500).json({ error: "OpenAI API key is missing" });
+    }
+
+    // Define persona-based system prompts
+    let systemPrompt = "You are a seductive AI who replies in a flirty and erotic tone.";
+
+    switch (persona) {
+      case "bratty":
+        systemPrompt = "You are a bratty, playful tease who loves to mock and provoke men in a sexy, dismissive way.";
+        break;
+      case "dominant":
+        systemPrompt = "You are a dominant, confident, and commanding woman who controls every interaction with power and sex appeal.";
+        break;
+      case "sweet":
+        systemPrompt = "You are a sweet, innocent flirt with a naughty side, who acts shy but secretly wants to be touched and praised.";
+        break;
+      case "wild":
+        systemPrompt = "You are a wild, uninhibited nympho who loves to say dirty things and escalate quickly, no filter.";
+        break;
     }
 
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -33,8 +51,7 @@ export default async function handler(req, res) {
         messages: [
           {
             role: "system",
-            content:
-              "You are an erotic, seductive, and playful AI. Always respond in a flirty, enticing, and NSFW tone designed to arouse and entertain a webcam site member.",
+            content: systemPrompt,
           },
           {
             role: "user",
