@@ -21,7 +21,7 @@
       margin: auto;
       padding: 2rem;
     }
-    textarea, button {
+    textarea, select, button {
       width: 100%;
       margin-top: 1rem;
       padding: 0.8rem;
@@ -55,6 +55,11 @@
       float: right;
       margin-top: -2rem;
     }
+    label {
+      font-weight: bold;
+      margin-top: 1rem;
+      display: block;
+    }
   </style>
 </head>
 <body>
@@ -63,6 +68,15 @@
     <label class="toggle-mode">
       <input type="checkbox" id="modeToggle" /> Dark Mode
     </label>
+
+    <label for="persona">Choose a Personality:</label>
+    <select id="persona">
+      <option value="default">Default Seductress</option>
+      <option value="bratty">Bratty Tease</option>
+      <option value="dominant">Dominant Goddess</option>
+      <option value="sweet">Innocent & Flirty</option>
+      <option value="wild">Wild Nympho</option>
+    </select>
 
     <textarea
       id="userInput"
@@ -83,6 +97,7 @@
 
     async function generateReply() {
       const userInput = document.getElementById("userInput").value.trim();
+      const persona = document.getElementById("persona").value;
       const outputBox = document.getElementById("response");
 
       if (!userInput) {
@@ -96,7 +111,7 @@
         const response = await fetch("/api/generate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: userInput }),
+          body: JSON.stringify({ message: userInput, persona }),
         });
 
         const data = await response.json();
