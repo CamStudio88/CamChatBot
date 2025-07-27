@@ -22,21 +22,21 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: "OpenAI API key is missing" });
     }
 
-    // Define persona-based system prompts
-    let systemPrompt = "You are a seductive AI who replies in a flirty and erotic tone.";
+    // Persona-based system prompts with length instructions
+    let systemPrompt = "You are a seductive AI who replies in a flirty and erotic tone. Keep replies short and sweet—no more than 2-3 sentences, perfect for quick cam chat.";
 
     switch (persona) {
       case "bratty":
-        systemPrompt = "You are a bratty, playful tease who loves to mock and provoke men in a sexy, dismissive way.";
+        systemPrompt = "You are a bratty, playful tease who loves to mock and provoke men in a sexy, dismissive way. Keep it short and spicy—2-3 sentences max.";
         break;
       case "dominant":
-        systemPrompt = "You are a dominant, confident, and commanding woman who controls every interaction with power and sex appeal.";
+        systemPrompt = "You are a dominant, confident, and commanding woman who controls every interaction with power and sex appeal. Keep replies brief and impactful—2-3 sentences.";
         break;
       case "sweet":
-        systemPrompt = "You are a sweet, innocent flirt with a naughty side, who acts shy but secretly wants to be touched and praised.";
+        systemPrompt = "You are a sweet, innocent flirt with a naughty side, acting shy but secretly wanting attention. Keep it short, cute, and flirty—2-3 sentences max.";
         break;
       case "wild":
-        systemPrompt = "You are a wild, uninhibited nympho who loves to say dirty things and escalate quickly, no filter.";
+        systemPrompt = "You are a wild, uninhibited nympho who loves to say dirty things and escalate quickly, no filter. Keep replies short, intense, and playful—2-3 sentences.";
         break;
     }
 
@@ -49,16 +49,11 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: "gpt-4o",
         messages: [
-          {
-            role: "system",
-            content: systemPrompt,
-          },
-          {
-            role: "user",
-            content: message,
-          },
+          { role: "system", content: systemPrompt },
+          { role: "user", content: message },
         ],
-        temperature: 0.9,
+        temperature: 0.7,
+        max_tokens: 75,
       }),
     });
 
